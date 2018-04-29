@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Assigenment 3: Client to call API service</h2>
+
+<p>Click to perform action</p>
+
+<p>Select your file:</p>
+<input type=file id="file">
+<br>
+<p>Or enter your file's url:</p>
+<input id="fileURL">
+<br>
+<p>StudentID:___________ Nickname:___________</p>
+<input id="studentPicID">
+<button type="button" onclick="uploadImage()">Upload</button>
+<br>
+
+<input id="studentID"> <input id="nickname">
+<button type="button" onclick="addStudent()">Add Student</button>
+<br>
+<input id="imageID">
+<button type="button" onclick="getImage()">Show image</button>
+<img id="the-image">
+<br>
+<input id="deleteID">
+<button type="button" onclick="deleteStudent()">Delete student</button>
+<br>
+<input id="oneStudentID">
+<button type="button" onclick="getStudent()">Get student</button>
+<br>
+<button type="button" onclick="allStudents()">List all students</button>
+
+<p id="print"></p>
+<p id="picture"></p>
+
+<script>
+function uploadImage() {
+    var f, file1, result;
+
+    // Get the value of the input field with id="numb"
+    f = document.getElementById("file").value;
+    file1 = document.getElementById("fileURL").value;
+    // If x is Not a Number or less than one or greater than 10
+    result = "hey";
+    if (f == "") {
+        result = result + " no file selected";
+        if (file1 == ""){
+            result = result + " and no url given";
+        } else {
+            result = file1;
+            // send the photo to remote
+            var req = new XMLHttpRequest();
+            req.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("print").innerHTML = this.responseText;
+                 }
+            };
+            req.open('POST', "https://res.cloudinary.com/cloudcomp/image/fetch/"+result, true);
+            req.send();
+            //request to aws
+            var request = new XMLHttpRequest();
+            //getlist of uploads
+            request.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("print").innerHTML = this.responseText;
+                }
+            };
+            request.open("POST", "http://localhost:8888/student/addpic.php", true);
+            sendThis = '{ "studentID":  '+ document.getElementById("studentPicID").value +' , "pictureID": "https://res.cloudinary.com/cloudcomp/image/fetch/'+ result + '"}';
+            request.send(sendThis);
+        }
+    } else {
+        result = f;
+        // send the photo to https://api.cloudinary.com/v1_1/cloudcomp/image/upload
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("print").innerHTML = this.responseText;
+            }
+        }; 
+        req.open('POST', "https://api.cloudinary.com/v1_1/cloudcomp/image/upload");
+        var fileName = document.getElementById("file").value;
+        req.send('{"file": "' + fileName + '", "upload_preset":"thomas", "Naming and storage":{"public_id": "'+ fileName +'"}');
+
+            //request to aws
+            var request = new XMLHttpRequest();
+            //getlist of uploads
+            request.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("picture").innerHTML = this.responseText;
+                }
+            };
+            request.open("POST", "http://localhost:8888/student/addpic.php", true);
+            sendThis = '{ "studentID":  '+ document.getElementById("studentPicID").value +' , "pictureID": "https://res.cloudinary.com/cloudcomp/image/upload/'+ fileName + '"}';
+            request.send(sendThis);
+    }
+}
+
+function getCloud(picURL) {
+    /*CLOUDINARY'S DOCUMENTATION FOR getting a image sucks!
+        Although heavily documented the documentation really tells the user nothing
+        outside of needing to download their libraries. 
+        To use their api, causes a serious issue with how to deal with the response it
+        is like an HTML email from 2001 and doesn't explain how to use it at all.
+    */
+    var request = new XMLHttpRequest();
+    //getlist of uploads
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("print").innerHTML = this.responseText;
+        }
+    };
+    request.open("GET", picURL, true);
+    request.send();
+    var image = this.responseText;
+    //var img = document.createElement('img');
+    //img.src = picURL;
+    document.body.appendChild(image);
+    document.getElementById("picture").innerHTML = "picture done";
+}
+//get image
+function getImage() {
+    var request = new XMLHttpRequest();
+    //getlist of uploads
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var stuff = JSON.parse(this.responseText);
+            var i = 0;
+            while (stuff.pictures[i] != undefined){
+                picURL = stuff.pictures[i].pictureID;
+                var img = document.createElement('img');
+                img.src = picURL;
+                document.body.appendChild(image);
+                i = i + 1;
+            }
+        }
+    };
+    request.open("POST", "http://localhost:8888/student/picture.php", true);
+    request.send(document.getElementById("imageID").value);
+}
+
+//delete 1
+function deleteStudent() {
+    var request = new XMLHttpRequest();
+    //getlist of uploads
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("print").innerHTML = this.responseText;
+        }
+    };
+    request.open("POST", "http://localhost:8888/student/delete.php", true);
+    request.send(document.getElementById("deleteID").value);
+}
+//list all
+function allStudents(){
+    var request = new XMLHttpRequest();
+    //getlist of uploads
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("print").innerHTML = this.responseText;
+        }
+    };
+    request.open("GET", "http://localhost:8888/student/read.php", true);
+    request.send();
+}
+//list one
+function getStudent() {
+    var request = new XMLHttpRequest();
+    //getlist of uploads
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("print").innerHTML = this.responseText;
+        }
+    };
+    request.open("POST", "http://localhost:8888/student/get.php", true);
+    request.send(document.getElementById("oneStudentID").value);
+}
+//add one
+function addStudent() {
+    var request = new XMLHttpRequest();
+    //getlist of uploads
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("print").innerHTML = this.responseText;
+        }
+    };
+    request.open("POST", "http://localhost:8888/student/add.php", true);
+    sendThis = '{ "studentID":  '+ document.getElementById("studentID").value +' , "nickname": "' + document.getElementById("nickname").value + '"}';
+    request.send(sendThis);
+}
+
+</script>
+
+</body>
+</html> 
