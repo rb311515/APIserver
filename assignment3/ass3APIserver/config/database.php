@@ -4,11 +4,11 @@ class Database{
     //to help get RDS connected to the server 
  
     // specify your own database credentials
-    private $host = "cloudtutorialdb.cecuhgtsfgoj.us-east-1.rds.amazonaws.com";
+    private $host = "";//url of service
     private $port = "3306";
-    private $dbname = "ass3";
-    private $user = "thomasrs";
-    private $password = "5DG-nqW-B8H-u27";
+    private $dbname = "";//name of service
+    private $user = "";//username for service
+    private $password = "";//pw for service
     public $conn;
     // get the database connection
     public function getDBConnection(){
